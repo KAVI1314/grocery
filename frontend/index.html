@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grocery Management System</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Fonts: Clash Display + DM Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet">
+  <!-- Boxicons for icons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  NAVBAR                                 -->
+  <!-- ═══════════════════════════════════════ -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="brand-icon">🛒</span>
+      <span class="brand-name">GrocerPro</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-primary" onclick="openModal()">
+        <i class='bx bx-plus'></i> Add Item
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  MAIN CONTENT                           -->
+  <!-- ═══════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- DASHBOARD STATS CARDS -->
+    <section class="dashboard-section">
+      <h2 class="section-title">Dashboard Overview</h2>
+      <div class="stats-grid">
+        <div class="stat-card total">
+          <div class="stat-icon"><i class='bx bx-package'></i></div>
+          <div class="stat-info">
+            <span class="stat-number" id="stat-total">0</span>
+            <span class="stat-label">Total Items</span>
+          </div>
+        </div>
+        <div class="stat-card in-stock">
+          <div class="stat-icon"><i class='bx bx-check-circle'></i></div>
+          <div class="stat-info">
+            <span class="stat-number" id="stat-instock">0</span>
+            <span class="stat-label">In Stock</span>
+          </div>
+        </div>
+        <div class="stat-card low-stock">
+          <div class="stat-icon"><i class='bx bx-error'></i></div>
+          <div class="stat-info">
+            <span class="stat-number" id="stat-lowstock">0</span>
+            <span class="stat-label">Low Stock</span>
+          </div>
+        </div>
+        <div class="stat-card out-of-stock">
+          <div class="stat-icon"><i class='bx bx-x-circle'></i></div>
+          <div class="stat-info">
+            <span class="stat-number" id="stat-outofstock">0</span>
+            <span class="stat-label">Out of Stock</span>
+          </div>
+        </div>
+        <div class="stat-card value">
+          <div class="stat-icon"><i class='bx bx-rupee'></i></div>
+          <div class="stat-info">
+            <span class="stat-number" id="stat-value">₹0</span>
+            <span class="stat-label">Total Value</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEARCH & FILTER BAR -->
+    <section class="filter-section">
+      <div class="filter-bar">
+        <div class="search-box">
+          <i class='bx bx-search search-icon'></i>
+          <input type="text" id="searchInput" placeholder="Search grocery items..." oninput="handleSearch()" />
+        </div>
+        <div class="filter-controls">
+          <select id="categoryFilter" onchange="handleSearch()">
+            <option value="all">All Categories</option>
+          </select>
+          <select id="stockFilter" onchange="handleSearch()">
+            <option value="all">All Stock</option>
+            <option value="true">In Stock</option>
+            <option value="false">Out of Stock</option>
+          </select>
+        </div>
+        <button class="btn btn-outline" onclick="clearFilters()">
+          <i class='bx bx-x'></i> Clear
+        </button>
+      </div>
+      <!-- Result count -->
+      <p class="result-count" id="resultCount"></p>
+    </section>
+
+    <!-- LOW STOCK ALERT BANNER -->
+    <div class="low-stock-banner" id="lowStockBanner" style="display:none;">
+      <i class='bx bx-error-circle'></i>
+      <span id="lowStockMessage">Some items are running low on stock!</span>
+    </div>
+
+    <!-- GROCERY TABLE -->
+    <section class="table-section">
+      <div class="table-header">
+        <h2 class="section-title">Grocery Inventory</h2>
+        <div class="view-toggle">
+          <button class="view-btn active" id="tableViewBtn" onclick="switchView('table')">
+            <i class='bx bx-table'></i>
+          </button>
+          <button class="view-btn" id="cardViewBtn" onclick="switchView('card')">
+            <i class='bx bx-grid-alt'></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading spinner -->
+      <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <p>Loading items...</p>
+      </div>
+
+      <!-- TABLE VIEW -->
+      <div id="tableView">
+        <div class="table-wrapper">
+          <table class="grocery-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="groceryTableBody">
+              <!-- Rows injected by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CARD VIEW (hidden by default) -->
+      <div id="cardView" style="display:none;">
+        <div class="cards-grid" id="groceryCardsGrid">
+          <!-- Cards injected by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="empty-icon">🛒</div>
+        <h3>No items found</h3>
+        <p>Try adjusting your search or add a new grocery item.</p>
+        <button class="btn btn-primary" onclick="openModal()">Add First Item</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  ADD / EDIT MODAL                       -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Grocery Item</h2>
+        <button class="modal-close" onclick="closeModal()">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+
+      <form class="modal-form" id="groceryForm" onsubmit="handleFormSubmit(event)">
+        <!-- Hidden field for edit mode -->
+        <input type="hidden" id="itemId" />
+
+        <div class="form-grid">
+          <!-- Item Name -->
+          <div class="form-group full-width">
+            <label for="itemName">Item Name <span class="required">*</span></label>
+            <input type="text" id="itemName" placeholder="e.g., Basmati Rice" required />
+            <span class="field-error" id="nameError"></span>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label for="itemCategory">Category <span class="required">*</span></label>
+            <select id="itemCategory" required>
+              <option value="">Select category</option>
+              <option value="Grains">Grains</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Vegetables">Vegetables</option>
+              <option value="Fruits">Fruits</option>
+              <option value="Pulses">Pulses</option>
+              <option value="Oils">Oils</option>
+              <option value="Bakery">Bakery</option>
+              <option value="Beverages">Beverages</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Spices">Spices</option>
+              <option value="Frozen">Frozen</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <!-- Unit -->
+          <div class="form-group">
+            <label for="itemUnit">Unit <span class="required">*</span></label>
+            <select id="itemUnit" required>
+              <option value="">Select unit</option>
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+              <option value="litre">litre</option>
+              <option value="ml">ml</option>
+              <option value="pcs">pcs</option>
+              <option value="dozen">dozen</option>
+              <option value="packet">packet</option>
+              <option value="bottle">bottle</option>
+              <option value="box">box</option>
+            </select>
+          </div>
+
+          <!-- Quantity -->
+          <div class="form-group">
+            <label for="itemQuantity">Quantity <span class="required">*</span></label>
+            <input type="number" id="itemQuantity" placeholder="0" min="0" required />
+          </div>
+
+          <!-- Price -->
+          <div class="form-group">
+            <label for="itemPrice">Price (₹) <span class="required">*</span></label>
+            <input type="number" id="itemPrice" placeholder="0.00" min="0" step="0.01" required />
+          </div>
+
+          <!-- Low Stock Threshold -->
+          <div class="form-group">
+            <label for="itemThreshold">Low Stock Alert Below</label>
+            <input type="number" id="itemThreshold" placeholder="5" min="1" value="5" />
+          </div>
+
+          <!-- Expiry Date -->
+          <div class="form-group">
+            <label for="itemExpiry">Expiry Date</label>
+            <input type="date" id="itemExpiry" />
+          </div>
+
+          <!-- In Stock Toggle -->
+          <div class="form-group full-width">
+            <label class="toggle-label">
+              <span>Item Available in Stock</span>
+              <div class="toggle-switch">
+                <input type="checkbox" id="itemInStock" checked />
+                <span class="toggle-slider"></span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class='bx bx-save'></i>
+            <span id="submitBtnText">Add Item</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  DELETE CONFIRMATION MODAL              -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="modal-overlay" id="deleteModalOverlay">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Confirm Delete</h2>
+        <button class="modal-close" onclick="closeDeleteModal()">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+      <div class="delete-modal-body">
+        <div class="delete-icon">🗑️</div>
+        <p>Are you sure you want to delete <strong id="deleteItemName"></strong>?</p>
+        <p class="delete-warning">This action cannot be undone.</p>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">
+          <i class='bx bx-trash'></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  TOAST NOTIFICATION                     -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="toast" id="toast">
+    <i class='bx bx-check-circle toast-icon' id="toastIcon"></i>
+    <span id="toastMessage"></span>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
